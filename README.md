@@ -52,6 +52,19 @@ The diagram above illustrates the flow of the CrewAI project:
 - The agents work in a sequential process, with the Researcher's output feeding into the Reporting Analyst's work
 - The final output is a comprehensive report on the latest AI developments
 
+## Video Tutorial
+
+Watch this step-by-step tutorial on how to get started with CrewAI:
+
+[![CrewAI Tutorial](https://img.youtube.com/vi/-kSOTtYzgEw/0.jpg)](https://youtu.be/-kSOTtYzgEw)
+
+This tutorial covers:
+- Installing UV and CrewAI
+- Setting up your development environment
+- Creating a project scaffold
+- Understanding the key components: Agents, Tasks, and Crews
+- Running your first multi-agent AI system
+
 ## Support
 
 For support, questions, or feedback regarding the LatestAiDevelopment Crew or crewAI.
