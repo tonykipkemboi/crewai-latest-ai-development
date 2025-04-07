@@ -57,7 +57,7 @@ The diagram above illustrates the flow of the CrewAI project:
 For support, questions, or feedback regarding the LatestAiDevelopment Crew or crewAI.
 - Visit our [documentation](https://docs.crewai.com)
 - Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
+- [Join our Community Forum](https://community.crewai.com/)
 - [Chat with our docs](https://chatg.pt/DWjSBZn)
 
 Let's create wonders together with the power and simplicity of crewAI.
