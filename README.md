@@ -43,6 +43,15 @@ This example, unmodified, will run the create a `report.md` file with the output
 
 The latest-ai-development Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
 
+![Project Diagram](project_diagram-1.png)
+
+The diagram above illustrates the flow of the CrewAI project:
+- The Researcher Agent uses the SerperDevTool to gather information
+- The Research Task is assigned to the Researcher Agent
+- The Reporting Task is assigned to the Reporting Analyst Agent
+- The agents work in a sequential process, with the Researcher's output feeding into the Reporting Analyst's work
+- The final output is a comprehensive report on the latest AI developments
+
 ## Support
 
 For support, questions, or feedback regarding the LatestAiDevelopment Crew or crewAI.
