@@ -7,7 +7,6 @@ requires-python = ">=3.10,<3.13"
 dependencies = [
     "boto3>=1.37.28",
     "crewai[tools]>=0.108.0,<1.0.0",
-    "litellm>=1.61.15"
 ]
 
 [project.scripts]
