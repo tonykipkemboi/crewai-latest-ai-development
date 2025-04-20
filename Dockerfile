@@ -5,7 +5,8 @@ FROM python:3.12-slim-bookworm
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install UV for Python dependency management
+# Install build tools and UV
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir uv
 
 # Copy dependency files first for better caching

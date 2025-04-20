@@ -2,9 +2,10 @@
 # Builds a reusable image for scaffolding and running any CrewAI project.
 FROM python:3.12-slim
 
-# Install UV and CrewAI
+# Install build tools and UV
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir uv
-RUN uv tool install crewai
+RUN uv pip install crewai --system
 
 # Set working directory for scaffolding or running
 WORKDIR /work
