@@ -1,0 +1,10 @@
+services:
+  crewai:
+    image: tonykip/crewai:latest
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ./output:/app/output
+    env_file: .env
+    entrypoint: ["crewai"]
+    command: ["run"]

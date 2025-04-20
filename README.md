@@ -2,6 +2,66 @@
 
 Welcome to the LatestAiDevelopment Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
 
+## Quick Start (Docker)
+
+Prerequisite: Docker installed.
+
+1. **Scaffold a new project**:
+   ```bash
+   docker pull tonykip/crewai:cli   # CrewAI CLI image
+   docker run --rm -v "$(pwd)":/work tonykip/crewai:cli create crew my_crew
+   cd my_crew
+   ```
+2. Copy and fill `.env`:
+   ```bash
+   cp .env_example .env
+   ```
+   Add your MODEL, OPENAI_API_KEY, and SERPER_API_KEY in `.env`.
+3. **Build & Run**:
+   ```bash
+   # Build official project image
+   docker build -t tonykip/crewai:latest .
+   # Run using the official project image
+   docker run --rm --env-file .env -v "$(pwd)/output":/app/output tonykip/crewai:latest run
+   ```
+
+## Image Types
+
+There are two official Docker images published under the `tonykip` namespace:
+
+- **CLI image** (`tonykip/crewai:cli`):
+  - Includes only the CrewAI CLI tools (`uv`, `crewai[tools]`).
+  - Does _not_ include any project code.
+  - Use to scaffold new crews (`crewai create crew ...`) or to run any local project directory via bind-mount.
+
+- **Project image** (`tonykip/crewai:latest`):
+  - Contains your project code in `/app` with all dependencies pre-installed.
+  - Entrypoint is `crewai` with default `run` command.
+  - Use to execute your crew (`run`, `train`, `test`, etc.) out-of-the-box.
+
+**Usage Examples:**
+
+```bash
+# Scaffold a new crew
+mkdir my_crew && cd my_crew
+docker run --rm -v "$(pwd)":/work tonykip/crewai:cli create crew .
+
+# Run the crew
+docker run --rm --env-file .env -v "$(pwd)/output":/app/output tonykip/crewai:latest
+```
+
+## Publish Your Image
+
+From your project root, build and push to Docker Hub:
+```bash
+  # Project image
+  docker build -t tonykip/crewai:latest .
+  docker push tonykip/crewai:latest
+  # CLI image
+  docker build -f Dockerfile.cli -t tonykip/crewai:cli .
+  docker push tonykip/crewai:cli
+```
+
 ## Installation
 
 Ensure you have Python >=3.10 <3.13 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
@@ -38,6 +98,56 @@ $ crewai run
 This command initializes the latest-ai-development Crew, assembling the agents and assigning them tasks as defined in your configuration.
 
 This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+
+## Scaffolding via Docker CLI
+
+If you haven’t installed CrewAI locally or need a consistent environment across machines, you can use our `crewai-cli` image to scaffold new projects:
+
+1. **Pull the prebuilt CLI image**:
+
+    ```bash
+    docker pull tonykip/crewai:cli
+    ```
+
+2. **Create a fresh crew** in a host directory:
+
+    ```bash
+    mkdir my_new_crew
+    docker run --rm -v "$(pwd)/my_new_crew":/work tonykip/crewai:cli create crew my_new_crew
+    ```
+
+   This generates all scaffolding in `my_new_crew` without installing anything on your host.
+
+3. **Enter and run**:
+
+    ```bash
+    cd my_new_crew
+    docker run --rm -v "$(pwd)":/app -v "$(pwd)/output":/app/output \
+      --env-file .env tonykip/crewai:latest run
+    ```
+
+After this, continue with development as usual—your code is in `my_new_crew/`.
+
+### Iterative Development
+
+All crew files (e.g., `config/tasks.yaml`, `config/agents.yaml`, `src/crew.py`, `src/main.py`, custom tools, etc.) live on your host and are bind-mounted into the container. To edit and test:
+
+1. **Edit on your host**: open files in your preferred editor.
+2. **Re-run tasks**:
+   ```bash
+   docker-compose run --rm crewai run
+   ```
+3. **Open a shell** inside the container for manual commands:
+   ```bash
+   docker-compose run --rm crewai bash
+   ```
+4. **Invoke any CLI script** from `[project.scripts]`, e.g.: 
+   ```bash
+   docker-compose run --rm crewai train
+   docker-compose run --rm crewai test
+   ```
+
+This provides a seamless edit–run loop without installing anything locally.
 
 ## Understanding Your Crew
 

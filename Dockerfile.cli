@@ -1,0 +1,13 @@
+# CLI Dockerfile for CrewAI
+# Builds a reusable image for scaffolding and running any CrewAI project.
+FROM python:3.12-slim
+
+# Install UV and CrewAI
+RUN pip install --no-cache-dir uv
+RUN uv tool install crewai
+
+# Set working directory for scaffolding or running
+WORKDIR /work
+
+# Entrypoint is the CrewAI CLI
+ENTRYPOINT ["crewai"]
