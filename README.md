@@ -50,6 +50,50 @@ docker run --rm -v "$(pwd)":/work tonykip/crewai:cli create crew .
 docker run --rm --env-file .env -v "$(pwd)/output":/app/output tonykip/crewai:latest
 ```
 
+## Running CrewAI Docker Images on Windows
+
+CrewAI Docker images are built for `amd64` (Intel/AMD) and `arm64` (Apple Silicon/Windows ARM) Linux architectures. You can run these images seamlessly on Windows using Docker Desktop. 
+
+### Why Linux Images Work on Windows
+- **Docker Desktop for Windows** uses a lightweight Linux VM (via WSL2 or Hyper-V) to run Linux containers.
+- You do **not** need a Windows-native Docker image to use CrewAI on Windows.
+- This approach is standard for most Python and AI/ML projects.
+
+### Prerequisites
+- **Windows 10/11** (Pro/Enterprise/Education recommended for Hyper-V, but WSL2 works on Home)
+- **Docker Desktop** installed ([Get Docker Desktop](https://www.docker.com/products/docker-desktop/))
+- **WSL2** enabled (recommended, Docker Desktop will guide you through setup)
+
+### Step-by-Step: Running CrewAI on Windows
+1. **Install Docker Desktop**
+   - Download and install from [docker.com](https://www.docker.com/products/docker-desktop/).
+   - Follow prompts to enable WSL2 (if not already enabled).
+
+2. **Open PowerShell or Command Prompt**
+
+3. **Run the CrewAI CLI image:**
+   ```sh
+   docker run --rm -it tonykip/crewai:cli --help
+   ```
+   Or run a project image:
+   ```sh
+   docker run --rm -it tonykip/crewai:latest
+   ```
+
+4. **Mount your local project directory (optional):**
+   ```sh
+   docker run --rm -it -v %cd%:/work tonykip/crewai:cli
+   ```
+   - Replace `%cd%` with your project path if not running from your project root.
+   - On Git Bash or WSL, use `$(pwd)` instead of `%cd%`.
+
+### Notes
+- **File Sharing:** Docker Desktop automatically shares your Windows files with Linux containers. If you run into permission issues, check Docker Desktop settings under "Resources > File Sharing".
+- **Networking:** Use `localhost` in your container to access services running on your Windows host.
+- **Performance:** WSL2 offers near-native performance for most workloads.
+
+For more details, see the [Docker Desktop documentation](https://docs.docker.com/desktop/windows/wsl/).
+
 ## Publish Your Image
 
 From your project root, build and push to Docker Hub:
