@@ -34,6 +34,7 @@ jobs:
           context: .
           file: Dockerfile.cli
           push: true
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
           tags: |
             tonykip/crewai:cli
             tonykip/crewai:${{ env.TAG }}
@@ -45,6 +46,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
           tags: |
             tonykip/crewai:latest
             tonykip/crewai:${{ env.TAG }}
@@ -56,6 +58,7 @@ jobs:
           context: .
           file: Dockerfile.cli
           push: true
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
           tags: tonykip/crewai:cli
         if: github.ref == 'refs/heads/main'
 
@@ -65,5 +68,6 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
           tags: tonykip/crewai:latest
         if: github.ref == 'refs/heads/main'
