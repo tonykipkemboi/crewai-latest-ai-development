@@ -44,11 +44,17 @@ There are two official Docker images published under the `tonykip` namespace:
 ```bash
 # Scaffold a new crew
 mkdir my_crew && cd my_crew
-docker run --rm -v "$(pwd)":/work tonykip/crewai:cli create crew .
+docker run -it --rm -v "$(pwd)":/work tonykip/crewai:cli create crew .
 
 # Run the crew
 docker run --rm --env-file .env -v "$(pwd)/output":/app/output tonykip/crewai:latest
 ```
+
+### Note on API Keys and Model Providers
+- **OpenAI and Serper API keys are optional.**
+- During the interactive setup, you can choose from a variety of models and providers—including local models like Ollama.
+- If you do not want to use OpenAI or Serper, simply select a different provider when prompted.
+- You can always update your model/provider settings later in your crew's configuration files.
 
 ## Running CrewAI Docker Images on Windows
 
@@ -157,7 +163,7 @@ If you haven’t installed CrewAI locally or need a consistent environment acros
 
     ```bash
     mkdir my_new_crew
-    docker run --rm -v "$(pwd)/my_new_crew":/work tonykip/crewai:cli create crew my_new_crew
+    docker run -it --rm -v "$(pwd)/my_new_crew":/work tonykip/crewai:cli create crew my_new_crew
     ```
 
    This generates all scaffolding in `my_new_crew` without installing anything on your host.
