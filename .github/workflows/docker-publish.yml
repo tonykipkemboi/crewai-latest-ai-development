@@ -3,6 +3,7 @@ name: Build and Push Docker Images
 on:
   push:
     branches: [main]
+    tags: [ 'v*.*.*' ]
   workflow_dispatch:
 
 jobs:
@@ -22,13 +23,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Get tag name
+        id: get_tag
+        run: |
+          echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Build and push CLI image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile.cli
           push: true
-          tags: tonykip/crewai:cli
+          tags: |
+            tonykip/crewai:cli
+            tonykip/crewai:${{ env.TAG }}
+        if: startsWith(github.ref, 'refs/tags/')
 
       - name: Build and push project image
         uses: docker/build-push-action@v5
@@ -36,4 +45,25 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          tags: |
+            tonykip/crewai:latest
+            tonykip/crewai:${{ env.TAG }}
+        if: startsWith(github.ref, 'refs/tags/')
+
+      - name: Build and push CLI image (main branch)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.cli
+          push: true
+          tags: tonykip/crewai:cli
+        if: github.ref == 'refs/heads/main'
+
+      - name: Build and push project image (main branch)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
           tags: tonykip/crewai:latest
+        if: github.ref == 'refs/heads/main'
