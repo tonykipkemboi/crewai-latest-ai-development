@@ -56,6 +56,47 @@ docker run --rm --env-file .env -v "$(pwd)/output":/app/output tonykip/crewai:la
 - If you do not want to use OpenAI or Serper, simply select a different provider when prompted.
 - You can always update your model/provider settings later in your crew's configuration files.
 
+## Troubleshooting: Docker Dependency Conflicts & Clean Runs
+
+If you encounter dependency errors like:
+
+```
+No solution found when resolving dependencies for split
+... your project's requirements are unsatisfiable.
+```
+
+This is usually due to a conflict between the dependencies required by CrewAI and any stale lock files (like `uv.lock`) in your project directory. This problem may not appear when running CrewAI natively (on your host) because a fresh virtual environment is created, but Docker often uses a system install and can be stricter or affected by leftover files.
+
+### Why does this happen?
+- **CrewAI manages its own dependencies** (like `litellm`) and expects to resolve them cleanly.
+- If a `uv.lock` (or similar) file exists from a previous run or a different environment, Docker's dependency resolver may pick it up and fail.
+- Native runs use a new virtual environment each time, but Docker images often install dependencies globally or in a shared context, making conflicts more likely.
+
+### How to Fix: Clean Run in Docker
+
+1. **Start an Interactive Shell in the CLI Container**
+   ```sh
+   docker run --rm -it --entrypoint bash -v "$(pwd)":/work tonykip/crewai:cli
+   ```
+   This opens a bash shell inside the container with your project directory mounted at `/work`.
+
+2. **Inside the Container, Clean Up and Run**
+   ```sh
+   cd /work
+   rm -f uv.lock
+   crewai run
+   ```
+   - This removes any stale lock file and runs CrewAI with a fresh dependency resolution.
+
+3. **Why this works:**
+   - Removing `uv.lock` ensures that CrewAI and its tools can install the correct versions of dependencies (especially `litellm`).
+   - This approach closely matches how CrewAI works natively and avoids most Docker-specific dependency issues.
+
+### Additional Tips
+- If you still have issues, make sure your `pyproject.toml` does **not** explicitly specify a conflicting `litellm` version. CrewAI will install the correct one.
+- Always check for and remove stale lock files after copying or reusing project directories.
+- If you want to automate this, you can add a pre-run script or Docker entrypoint that deletes `uv.lock` before running CrewAI.
+
 ## Running CrewAI Docker Images on Windows
 
 CrewAI Docker images are built for `amd64` (Intel/AMD) and `arm64` (Apple Silicon/Windows ARM) Linux architectures. You can run these images seamlessly on Windows using Docker Desktop. 
