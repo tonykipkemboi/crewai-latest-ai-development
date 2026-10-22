@@ -56,46 +56,56 @@ docker run --rm --env-file .env -v "$(pwd)/output":/app/output tonykip/crewai:la
 - If you do not want to use OpenAI or Serper, simply select a different provider when prompted.
 - You can always update your model/provider settings later in your crew's configuration files.
 
-## Troubleshooting: Docker Dependency Conflicts & Clean Runs
+## Dependency locks and Docker builds
 
-If you encounter dependency errors like:
+Both images install dependencies from the committed `uv.lock`. The current lock
+contains CrewAI 0.108.0 and LiteLLM 1.60.2. This prevents a new image build from
+silently selecting a newer release. These pins are not a claim that every
+dependency has been checked against every advisory.
 
+Do not delete the lockfile to fix a build. If the project metadata and lock
+disagree, the build should fail until the dependency change is reviewed.
+
+To update a dependency intentionally in a trusted development environment:
+
+1. Keep the existing lockfile and update only the needed package, for example
+   `uv lock --upgrade-package crewai`.
+2. Review the full lock diff, including transitive packages and their hashes.
+   Check the chosen versions against current vendor advisories.
+3. Test the project, commit the reviewed lock, and rebuild both images.
+
+The images set `UV_LOCKED=true`, so commands that use uv will fail if a mounted
+project needs a new or changed lock. Prepare and review that project's lock on
+the host before running it in the container. Scaffolding a project does not
+establish that its dependencies have been reviewed.
+
+The environment lives at `/opt/venv`, outside `/app` and `/work`, so source
+bind mounts do not replace the image's installed packages.
+
+### Check a rebuilt image before publishing
+
+Build both images locally under temporary tags:
+
+```bash
+docker build --pull -t crewai-project:security-check .
+docker build --pull -f Dockerfile.cli -t crewai-cli:security-check .
+docker run --rm crewai-project:security-check --version
+docker run --rm crewai-cli:security-check --version
+docker run --rm --entrypoint /opt/venv/bin/python crewai-project:security-check \
+  -c 'from importlib.metadata import version; print(version("crewai"), version("litellm"))'
+docker run --rm --entrypoint /opt/venv/bin/python crewai-cli:security-check \
+  -c 'from importlib.metadata import version; print(version("crewai"), version("litellm"))'
 ```
-No solution found when resolving dependencies for split
-... your project's requirements are unsatisfiable.
-```
 
-This is usually due to a conflict between the dependencies required by CrewAI and any stale lock files (like `uv.lock`) in your project directory. This problem may not appear when running CrewAI natively (on your host) because a fresh virtual environment is created, but Docker often uses a system install and can be stricter or affected by leftover files.
+Expect the locked versions above. Run the normal project and a mounted-project
+smoke test before publishing. Use only fresh images built from trusted
+artifacts for these checks.
 
-### Why does this happen?
-- **CrewAI manages its own dependencies** (like `litellm`) and expects to resolve them cleanly.
-- If a `uv.lock` (or similar) file exists from a previous run or a different environment, Docker's dependency resolver may pick it up and fail.
-- Native runs use a new virtual environment each time, but Docker images often install dependencies globally or in a shared context, making conflicts more likely.
-
-### How to Fix: Clean Run in Docker
-
-1. **Start an Interactive Shell in the CLI Container**
-   ```sh
-   docker run --rm -it --entrypoint bash -v "$(pwd)":/work tonykip/crewai:cli
-   ```
-   This opens a bash shell inside the container with your project directory mounted at `/work`.
-
-2. **Inside the Container, Clean Up and Run**
-   ```sh
-   cd /work
-   rm -f uv.lock
-   crewai run
-   ```
-   - This removes any stale lock file and runs CrewAI with a fresh dependency resolution.
-
-3. **Why this works:**
-   - Removing `uv.lock` ensures that CrewAI and its tools can install the correct versions of dependencies (especially `litellm`).
-   - This approach closely matches how CrewAI works natively and avoids most Docker-specific dependency issues.
-
-### Additional Tips
-- If you still have issues, make sure your `pyproject.toml` does **not** explicitly specify a conflicting `litellm` version. CrewAI will install the correct one.
-- Always check for and remove stale lock files after copying or reusing project directories.
-- If you want to automate this, you can add a pre-run script or Docker entrypoint that deletes `uv.lock` before running CrewAI.
+For the October 21, 2026 LiteLLM incident, inspect installed artifacts and build
+history separately. If the malicious 1.107.0 release was installed or executed,
+follow the [vendor incident response guidance](https://docs.litellm.ai/blog/security-incident-oct-21-2026).
+Changing a lockfile or rebuilding an image does not by itself clear a previously
+affected host. Do not start Python or pip in a suspect environment to check it.
 
 ## Running CrewAI Docker Images on Windows
 
@@ -165,10 +175,11 @@ pip install uv
 
 Next, navigate to your project directory and install the dependencies:
 
-(Optional) Lock the dependencies and install them by using the CLI command:
+Install the versions from the committed lock:
 ```bash
-crewai install
+uv sync --locked
 ```
+Review dependency changes separately before updating `uv.lock`.
 ### Customizing
 
 **Add your `OPENAI_API_KEY` into the `.env` file**
