@@ -1,28 +1,23 @@
-# Use a lightweight Python base image compatible with CrewAI requirements
-# (Python >=3.10, <3.13).
+# Python version supported by this project's lockfile.
 FROM python:3.12-slim-bookworm
+COPY --from=ghcr.io/astral-sh/uv:0.13.5 /uv /uvx /usr/local/bin/
 
-# Set the working directory inside the container
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+
+# Keep the environment outside /app so a source bind mount cannot hide it.
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_LOCKED=true \
+    UV_NO_DEV=true \
+    PATH="/usr/local/bin:/opt/venv/bin:${PATH}"
 WORKDIR /app
 
-# Install build tools and UV
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir uv
-
-# Copy dependency files first for better caching
+# Install only versions in the committed lock, then install the project.
 COPY pyproject.toml uv.lock ./
-
-# Install the CrewAI package via uv
-RUN uv pip install crewai --system
-
-# Install project dependencies
-RUN crewai install
-
-# Copy the rest of the application code
+RUN uv sync --locked --no-dev --no-install-project
 COPY . .
+RUN uv sync --locked --no-dev
 
-# Set entrypoint and default command to run the CrewAI script
 ENTRYPOINT ["crewai"]
 CMD ["run"]
 
-# Reminder: API keys (.env file) must be provided via environment variables when running the container
+# Pass API keys at runtime with --env-file; do not bake them into the image.
